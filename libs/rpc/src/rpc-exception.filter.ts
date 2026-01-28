@@ -26,7 +26,7 @@ export class RpcAllExceptionFilter extends BaseRpcExceptionFilter {
     if (status === 400) {
       const payload: RpcErrorPayload = {
         code: 'VALIDATION_ERROR',
-        message: 'Validation failed',
+        message: JSON.stringify(details),
         details,
       }
 
