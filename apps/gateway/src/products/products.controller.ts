@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Inject, Post } from '@nestjs/common'
+import 'multer'
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { ClientProxy } from '@nestjs/microservices'
 import { CurrentUser } from '../auth/current-user.decorator'
 import type { UserContext } from '../auth/auth.types'
@@ -23,12 +34,17 @@ type Product = {
 export class ProductsHttpController {
   constructor(
     @Inject('CATALOG_CLIENT') private readonly catalogClient: ClientProxy,
+    @Inject('MEDIA_CLIENT') private readonly mediaClient: ClientProxy,
   ) {}
 
   @Post('products')
   @AdminOnly()
+  @UseInterceptors(
+    FileInterceptor('image', { limits: { fieldSize: 5 * 1024 * 1024 } }),
+  )
   async createProduct(
     @CurrentUser() user: UserContext,
+    @UploadedFile() file: Express.Multer.File | undefined,
     @Body()
     body: {
       name: string
@@ -38,6 +54,31 @@ export class ProductsHttpController {
       imageUrl?: string
     },
   ) {
+    let imageUrl: string | undefined = undefined
+    let mediaId: string | undefined = undefined
+
+    if (file) {
+      const base64 = file.buffer.toString('base64')
+      try {
+        const uploadResult = await firstValueFrom<{
+          url: string
+          mediaId: string
+        }>(
+          this.mediaClient.send('media.uploadProductImage', {
+            fileName: file.originalname,
+            mimeType: file.mimetype,
+            base64,
+            uploadByUserId: user.clerkUserId,
+          }),
+        )
+        imageUrl = uploadResult.url
+        mediaId = uploadResult.mediaId
+      } catch (error) {
+        mapRpcErrorToHttp(error)
+      }
+    }
+
+    console.log('Create Product : ', body)
     let product: Product
 
     const paylaod = {
@@ -45,7 +86,7 @@ export class ProductsHttpController {
       description: body.description,
       price: Number(body.price),
       status: body.status,
-      imageUrl: body.imageUrl,
+      imageUrl,
       createdByClerkUserId: user.clerkUserId,
     }
 
@@ -58,6 +99,19 @@ export class ProductsHttpController {
       mapRpcErrorToHttp(error)
     }
 
+    if (mediaId) {
+      try {
+        await firstValueFrom(
+          this.mediaClient.send('media.attachToProduct', {
+            mediaId,
+            productId: String(product._id),
+            attachByUserId: user.clerkUserId,
+          }),
+        )
+      } catch (error) {
+        mapRpcErrorToHttp(error)
+      }
+    }
     return product
   }
 
@@ -67,6 +121,18 @@ export class ProductsHttpController {
     try {
       return await firstValueFrom<Product[]>(
         this.catalogClient.send('product.list', {}),
+      )
+    } catch (error) {
+      mapRpcErrorToHttp(error)
+    }
+  }
+
+  @Get('products/:id')
+  @Public()
+  async getProductById(@Param('id') id: string) {
+    try {
+      return await firstValueFrom<Product>(
+        this.catalogClient.send('product.getById', { id }),
       )
     } catch (error) {
       mapRpcErrorToHttp(error)

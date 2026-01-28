@@ -4,6 +4,7 @@ import { Logger } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { MicroserviceOptions, Transport } from '@nestjs/microservices'
 import { MediaModule } from './media.module'
+import { applyToMicroserviceLayer } from '@app/rpc'
 
 dotenv.config()
 
@@ -34,6 +35,7 @@ async function bootstrap() {
     },
   )
 
+  applyToMicroserviceLayer(app)
   app.enableShutdownHooks()
   await app.listen()
 
@@ -41,4 +43,4 @@ async function bootstrap() {
     `Media microservice (RMQ) is listening on queue ${QUEUE} via ${RQM_URL}`,
   )
 }
-bootstrap()
+void bootstrap()
