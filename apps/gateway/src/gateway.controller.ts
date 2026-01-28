@@ -1,7 +1,7 @@
-import { Controller, Get, Inject } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
-import { IsPublic } from './auth/public.decorator';
+import { Controller, Get, Inject } from '@nestjs/common'
+import { ClientProxy } from '@nestjs/microservices'
+import { firstValueFrom } from 'rxjs'
+import { Public } from './auth/public.decorator'
 
 @Controller()
 export class GatewayController {
@@ -12,7 +12,7 @@ export class GatewayController {
   ) {}
 
   @Get('health')
-  @IsPublic()
+  @Public()
   async health() {
     const ping = async (serviceName: string, client: ClientProxy) => {
       try {
@@ -20,28 +20,28 @@ export class GatewayController {
           client.send<Record<string, unknown>>('service.ping', {
             from: 'gateway',
           }),
-        );
+        )
 
         return {
           ok: true,
           service: serviceName,
           result,
-        };
+        }
       } catch (err: unknown) {
         return {
           ok: false,
           service: serviceName,
           error: err instanceof Error ? err.message : 'unknown error',
-        };
+        }
       }
-    };
+    }
     const [catalog, media, search] = await Promise.all([
       ping('catalog', this.catalogClient),
       ping('media', this.mediaClient),
       ping('search', this.searchClient),
-    ]);
+    ])
 
-    const ok = [catalog, media, search].every((s) => s.ok);
+    const ok = [catalog, media, search].every((s) => s.ok)
 
     return {
       ok,
@@ -50,6 +50,6 @@ export class GatewayController {
         now: new Date().toISOString(),
       },
       services: { catalog, media, search },
-    };
+    }
   }
 }

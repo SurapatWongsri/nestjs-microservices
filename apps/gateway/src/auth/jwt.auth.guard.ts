@@ -3,13 +3,13 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { AuthService } from './auth.service';
-import { UsersService } from '../users/users.service';
-import { IS_PUBLIC_KEY } from './public.decorator';
-import { REQUIRED_ROLE_KEY } from './admin.decorator';
-import { Request } from 'express';
+} from '@nestjs/common'
+import { Reflector } from '@nestjs/core'
+import { AuthService } from './auth.service'
+import { UsersService } from '../users/users.service'
+import { IS_PUBLIC_KEY } from './public.decorator'
+import { REQUIRED_ROLE_KEY } from './admin.decorator'
+import { Request } from 'express'
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -22,56 +22,55 @@ export class JwtAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     //if the handler is marked as public means anyone can access this route
 
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+    const Public = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
-    ]);
+    ])
 
-    if (isPublic) {
-      return true;
+    if (Public) {
+      return true
     }
 
-    const req = context.switchToHttp().getRequest<Request>();
+    const req = context.switchToHttp().getRequest<Request>()
 
-    const authorization = req.headers['authorization'];
+    const authorization = req.headers['authorization']
 
     if (!authorization || typeof authorization !== 'string') {
-      throw new UnauthorizedException('Missing authorization header');
+      throw new UnauthorizedException('Missing authorization header')
     }
 
     const token = authorization.startsWith('Bearer ')
       ? authorization.slice('Bearer '.length).trim()
-      : '';
+      : ''
 
     if (!token) {
-      throw new UnauthorizedException('Missing token');
+      throw new UnauthorizedException('Missing token')
     }
 
-    const identifyAuthUser =
-      await this.authService.verifyAndBuildContext(token);
+    const identifyAuthUser = await this.authService.verifyAndBuildContext(token)
 
     const dbUser = await this.usersService.upsertAuthUser({
       clerkUserId: identifyAuthUser.clerkUserId,
       email: identifyAuthUser.email,
       name: identifyAuthUser.name,
-    });
+    })
 
     const user = {
       ...identifyAuthUser,
       role: dbUser.role,
-    };
+    }
 
-    req['user'] = user;
+    req['user'] = user
 
     const requiredRole = this.reflector.getAllAndOverride<string>(
       REQUIRED_ROLE_KEY,
       [context.getHandler(), context.getClass()],
-    );
+    )
 
     if (requiredRole && user.role !== requiredRole) {
-      throw new UnauthorizedException('Unauthorized');
+      throw new UnauthorizedException('Unauthorized')
     }
 
-    return true;
+    return true
   }
 }

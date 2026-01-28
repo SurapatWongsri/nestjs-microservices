@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User, UserDocument } from './users.schema';
+import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
+import { User, UserDocument } from './users.schema'
 
 @Injectable()
 export class UsersService {
@@ -10,11 +10,11 @@ export class UsersService {
   ) {}
 
   async upsertAuthUser(input: {
-    clerkUserId: string;
-    email: string;
-    name: string;
+    clerkUserId: string
+    email: string
+    name: string
   }) {
-    const now = new Date();
+    const now = new Date()
 
     return this.userModel.findOneAndUpdate(
       {
@@ -35,10 +35,10 @@ export class UsersService {
         upsert: true,
         setDefaultsOnInsert: true,
       },
-    );
+    )
   }
 
   async findByClerkUserId(clerkUserId: string) {
-    return this.userModel.findOne({ clerkUserId });
+    return this.userModel.findOne({ clerkUserId })
   }
 }
