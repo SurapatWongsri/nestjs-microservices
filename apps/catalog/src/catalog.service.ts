@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common'
 
 @Injectable()
 export class CatalogService {
@@ -7,6 +7,6 @@ export class CatalogService {
       ok: true,
       service: 'catalog',
       now: new Date().toISOString(),
-    };
+    }
   }
 }

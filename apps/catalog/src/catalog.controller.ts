@@ -1,6 +1,6 @@
-import { Controller } from '@nestjs/common';
-import { CatalogService } from './catalog.service';
-import { MessagePattern } from '@nestjs/microservices';
+import { Controller } from '@nestjs/common'
+import { CatalogService } from './catalog.service'
+import { MessagePattern } from '@nestjs/microservices'
 
 @Controller()
 export class CatalogController {
@@ -8,6 +8,6 @@ export class CatalogController {
 
   @MessagePattern('service.ping')
   ping() {
-    return this.catalogService.ping();
+    return this.catalogService.ping()
   }
 }

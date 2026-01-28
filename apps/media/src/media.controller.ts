@@ -1,6 +1,6 @@
-import { Controller } from '@nestjs/common';
-import { MediaService } from './media.service';
-import { MessagePattern } from '@nestjs/microservices';
+import { Controller } from '@nestjs/common'
+import { MediaService } from './media.service'
+import { MessagePattern } from '@nestjs/microservices'
 
 @Controller()
 export class MediaController {
@@ -8,6 +8,6 @@ export class MediaController {
 
   @MessagePattern('service.ping')
   ping(): object {
-    return this.mediaService.ping();
+    return this.mediaService.ping()
   }
 }

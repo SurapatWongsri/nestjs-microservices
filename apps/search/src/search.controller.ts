@@ -1,6 +1,6 @@
-import { Controller } from '@nestjs/common';
-import { SearchService } from './search.service';
-import { MessagePattern } from '@nestjs/microservices';
+import { Controller } from '@nestjs/common'
+import { SearchService } from './search.service'
+import { MessagePattern } from '@nestjs/microservices'
 
 @Controller()
 export class SearchController {
@@ -8,6 +8,6 @@ export class SearchController {
 
   @MessagePattern('service.ping')
   ping(): object {
-    return this.searchService.ping();
+    return this.searchService.ping()
   }
 }

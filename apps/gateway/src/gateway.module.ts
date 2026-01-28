@@ -1,11 +1,12 @@
-import { Module } from '@nestjs/common';
-import { GatewayController } from './gateway.controller';
-import { GatewayService } from './gateway.service';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
-import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
+import { Module } from '@nestjs/common'
+import { GatewayController } from './gateway.controller'
+import { GatewayService } from './gateway.service'
+import { ClientsModule, Transport } from '@nestjs/microservices'
+import { ConfigModule } from '@nestjs/config'
+import { MongooseModule } from '@nestjs/mongoose'
+import { UsersModule } from './users/users.module'
+import { AuthModule } from './auth/auth.module'
+import { ProductsHttpController } from './products/products.controller'
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
     }),
     MongooseModule.forRoot(process.env.MONGO_URI_USERS as string),
     UsersModule,
+
     AuthModule,
     ClientsModule.register([
       {
@@ -57,7 +59,7 @@ import { AuthModule } from './auth/auth.module';
       },
     ]),
   ],
-  controllers: [GatewayController],
+  controllers: [GatewayController, ProductsHttpController],
   providers: [GatewayService],
 })
 export class GatewayModule {}
